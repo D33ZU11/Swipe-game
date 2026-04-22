@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* prevents accidental text selection while swiping */
+            user-select: none;
         }
 
         body {
@@ -22,7 +22,6 @@
             padding: 16px;
         }
 
-        /* main game container */
         .game-container {
             max-width: 500px;
             width: 100%;
@@ -60,7 +59,6 @@
             padding-bottom: 6px;
         }
 
-        /* card area */
         .card-area {
             background: #fffef7;
             border-radius: 48px;
@@ -104,7 +102,6 @@
             border-radius: 28px;
         }
 
-        /* swipe hints & buttons */
         .swipe-hint {
             display: flex;
             justify-content: space-between;
@@ -146,7 +143,6 @@
         .swipe-left:active { background: #ffe0e0; transform: scale(0.97);}
         .swipe-right:active { background: #dcfce8; transform: scale(0.97);}
 
-        /* progress */
         .progress {
             text-align: center;
             font-weight: 500;
@@ -159,7 +155,6 @@
             color: #b34e71;
         }
 
-        /* result panel */
         .result-panel {
             background: white;
             border-radius: 44px;
@@ -284,17 +279,13 @@
     <h1>✨ swipe & choose ✨</h1>
     <div style="text-align: center"><span class="sub">for you, my love 💌</span></div>
 
-    <!-- dynamic view: either game or results -->
     <div id="gameView">
         <div class="card-area">
             <div class="question-card">
-                <div class="image-placeholder" id="questionImage">
-                    <!-- image will be inserted here from external url -->
-                </div>
+                <div class="image-placeholder" id="questionImage"></div>
                 <div class="question-text" id="questionText">Loading...</div>
             </div>
         </div>
-
         <div class="swipe-hint">
             <button class="swipe-btn swipe-left" id="swipeLeftBtn">👈  NO  👈</button>
             <button class="swipe-btn swipe-right" id="swipeRightBtn">👉  YES  👉</button>
@@ -318,25 +309,56 @@
 </div>
 
 <script>
-    // ---------- QUESTION BANK ----------
-    // each question has: text, externalImageUrl (can be empty string if no pic)
+    // ============================================================
+    // 🟢🟢🟢  EDIT YOUR QUESTIONS AND PICTURES BELOW  🟢🟢🟢
+    // ============================================================
+    // 
+    // HOW TO EDIT:
+    // - Each question needs: text (the question) and imageUrl (direct link to a picture)
+    // - To add a new question: add a new line inside the brackets [ ... ]
+    // - To remove a question: just delete that line
+    // - To change a picture: replace the imageUrl link with any direct image URL
+    // 
+    // Find free images at: picsum.photos, unsplash.com, or any direct image link
+    //
+    // FORMAT EXAMPLE:
+    // { text: "Your question here?", imageUrl: "https://example.com/your-picture.jpg" }
+    //
+    // ============================================================
+
     const QUESTIONS = [
-        { text: "Do you want a drink? 🥤", imageUrl: "https://picsum.photos/id/221/400/280" },   // drinks themed random
+        // ⬇️⬇️⬇️ CHANGE YOUR QUESTIONS AND PICTURES HERE ⬇️⬇️⬇️
+        
+        { text: "Do you want a drink? 🥤", imageUrl: "https://picsum.photos/id/221/400/280" },
         { text: "Craving some pizza? 🍕", imageUrl: "https://picsum.photos/id/108/400/280" },
         { text: "Should we watch a movie tonight? 🎬", imageUrl: "https://picsum.photos/id/20/400/280" },
         { text: "Want me to give you a massage? 💆‍♀️", imageUrl: "https://picsum.photos/id/169/400/280" },
         { text: "Do you want dessert? 🍰", imageUrl: "https://picsum.photos/id/106/400/280" },
         { text: "Should we go for a walk? 🌳", imageUrl: "https://picsum.photos/id/96/400/280" },
         { text: "Do you need a hug right now? 🤗", imageUrl: "https://picsum.photos/id/48/400/280" },
-        { text: "Order some bubble tea? 🧋", imageUrl: "https://picsum.photos/id/225/400/280" }
+        { text: "Order some bubble tea? 🧋", imageUrl: "https://picsum.photos/id/225/400/280" },
+        
+        // ⬆️⬆️⬆️ ADD NEW LINES ABOVE THIS COMMENT ⬆️⬆️⬆️
+        // 💡 TIP: Make sure there's a comma (,) after each line except the last one!
     ];
 
-    // ---------- GLOBAL STATE ----------
-    let currentIndex = 0;                // which question we are on
-    let answers = [];                    // array of { choice: "yes"/"no", questionText, imageUrl }
+    // ============================================================
+    // 🟡🟡🟡  OPTIONAL: CHANGE GAME TITLE OR SUBTITLE  🟡🟡🟡
+    // ============================================================
+    // You can edit the <h1> and <span class="sub"> in the HTML above
+    // Look for lines 34 and 35 in the HTML section
+    
+    
+    // ============================================================
+    // 🔵🔵🔵  EVERYTHING BELOW IS THE GAME ENGINE  🔵🔵🔵
+    // ============================================================
+    // ⚠️ DON'T EDIT BELOW UNLESS YOU KNOW WHAT YOU'RE DOING ⚠️
+    // ============================================================
+    
+    let currentIndex = 0;
+    let answers = [];
     let gameCompleted = false;
 
-    // DOM elements
     const gameViewDiv = document.getElementById('gameView');
     const resultsViewDiv = document.getElementById('resultsView');
     const questionTextEl = document.getElementById('questionText');
@@ -349,7 +371,6 @@
     const copyLinkBtn = document.getElementById('copyLinkBtn');
     const resetGameBtn = document.getElementById('resetGameBtn');
 
-    // helper: render current question card (image + text)
     function renderCurrentQuestion() {
         if (currentIndex >= QUESTIONS.length) {
             finishGameAndShowResults();
@@ -357,7 +378,6 @@
         }
         const q = QUESTIONS[currentIndex];
         questionTextEl.innerText = q.text;
-        // handle external image: if imageUrl exists, create img, else show placeholder emoji
         questionImageEl.innerHTML = '';
         if (q.imageUrl && q.imageUrl.trim() !== '') {
             const img = document.createElement('img');
@@ -367,13 +387,11 @@
             img.style.height = "100%";
             img.style.objectFit = "cover";
             img.style.borderRadius = "32px";
-            // handle broken images gracefully
             img.onerror = () => {
                 img.src = "https://placehold.co/400x280/ffe8f0/c44569?text=❤️+image+missing";
             };
             questionImageEl.appendChild(img);
         } else {
-            // fallback cute emoji placeholder
             const fallbackDiv = document.createElement('div');
             fallbackDiv.innerText = "💗";
             fallbackDiv.style.fontSize = "4rem";
@@ -386,7 +404,6 @@
         progressIndicator.innerText = `question ${currentIndex+1} / ${QUESTIONS.length}`;
     }
 
-    // record answer and move to next
     function recordAnswer(choice) {
         if (gameCompleted) return;
         if (currentIndex >= QUESTIONS.length) return;
@@ -394,53 +411,41 @@
         const currentQ = QUESTIONS[currentIndex];
         answers.push({
             questionText: currentQ.text,
-            choice: choice,   // "yes" or "no"
+            choice: choice,
             imageUrl: currentQ.imageUrl || ""
         });
 
-        // move to next question
         currentIndex++;
         if (currentIndex < QUESTIONS.length) {
             renderCurrentQuestion();
         } else {
-            // game finished
             finishGameAndShowResults();
         }
     }
 
-    // finish: compile results, save to localStorage and generate share link
     function finishGameAndShowResults() {
         gameCompleted = true;
-        // store answers to localStorage (so that partner can later view via share link)
         const payload = {
             timestamp: Date.now(),
             answers: answers,
             totalQuestions: QUESTIONS.length
         };
         const dataStr = JSON.stringify(payload);
-        // generate unique ID for this session (short random + timestamp)
-        const sessionId = btoa(encodeURIComponent(dataStr)).slice(0, 64);  // URL safe-ish but we'll use short version
-        // we use localStorage to keep the result under that key (simulate a "database" via localStorage)
-        // the share link will contain a hash or query param: ?view=<sessionId>
+        const sessionId = btoa(encodeURIComponent(dataStr)).slice(0, 64);
         const storageKey = `swipegame_${sessionId}`;
         localStorage.setItem(storageKey, dataStr);
         
-        // Build absolute shareable URL (using current origin + path)
         const currentUrl = new URL(window.location.href);
-        // clean existing params
         currentUrl.searchParams.set('view', sessionId);
         const shareableLink = currentUrl.toString();
         
-        // display results view
         gameViewDiv.style.display = 'none';
         resultsViewDiv.style.display = 'block';
         
-        // render answers summary (for current user / partner when opened with same data)
         renderAnswersSummary(answers);
         shareLinkInput.value = shareableLink;
     }
 
-    // Render pretty list of answers (yes/no) with optional icons
     function renderAnswersSummary(answerArray) {
         if (!answerArray || answerArray.length === 0) {
             answersSummaryDiv.innerHTML = '<div style="text-align:center">✨ no answers yet ✨</div>';
@@ -461,46 +466,33 @@
         answersSummaryDiv.innerHTML = html;
     }
 
-    // reset everything to initial state (clear current answers, start over)
     function resetGame() {
-        // reset state variables
         currentIndex = 0;
         answers = [];
         gameCompleted = false;
-        // switch UI back to game view
         gameViewDiv.style.display = 'block';
         resultsViewDiv.style.display = 'none';
-        // re-render first question
         renderCurrentQuestion();
     }
 
-    // ---- LOAD SHARED RESULTS FROM URL (partner view) ----
-    // if URL contains ?view=sessionId, try to load the answers from localStorage and display them directly
     function loadSharedResultsIfPresent() {
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('view');
-        if (!sessionId) return false; // no shared data
+        if (!sessionId) return false;
         
         const storageKey = `swipegame_${sessionId}`;
         const storedData = localStorage.getItem(storageKey);
-        if (!storedData) {
-            // maybe it's expired or not found, but we can still show a message and allow game start
-            return false;
-        }
+        if (!storedData) return false;
         
         try {
             const parsed = JSON.parse(storedData);
             if (parsed.answers && Array.isArray(parsed.answers)) {
-                // partner view: show results directly without ability to replay? 
-                // but we allow to reset anyway. For partner: we show readonly results with a note
                 gameViewDiv.style.display = 'none';
                 resultsViewDiv.style.display = 'block';
                 renderAnswersSummary(parsed.answers);
-                // For share link, we want to also show a link to the same results (recreate share link)
                 const currentCleanUrl = new URL(window.location.href);
                 currentCleanUrl.searchParams.set('view', sessionId);
                 shareLinkInput.value = currentCleanUrl.toString();
-                // show a friendly message that these are partner's choices
                 const extraMsg = document.createElement('div');
                 extraMsg.className = 'finish-message';
                 extraMsg.innerHTML = '💖 These are the choices your love made! 💖<br><small>send this link to see again, or restart below</small>';
@@ -517,30 +509,15 @@
         return false;
     }
 
-    // ---- Also, when we generate new game we must ensure we don't overwrite partner accidentally
-    // reset game also clears URL param? to avoid confusion: after reset we remove view param and reload clean state
-    function resetAndClearSharedView() {
-        // remove view param from URL without reloading the page? better to replace state.
-        const url = new URL(window.location.href);
-        if (url.searchParams.has('view')) {
-            url.searchParams.delete('view');
-            window.history.replaceState({}, '', url.toString());
-        }
-        resetGame();
-    }
-
-    // after reset we also need to clear any leftover "partner message"
     function cleanPartnerMessage() {
         const existingMsg = document.getElementById('dynamicPartnerMsg');
         if (existingMsg) existingMsg.remove();
     }
 
-    // handle copy to clipboard
     function copyShareLink() {
         const link = shareLinkInput.value;
         if (!link) return;
         navigator.clipboard.writeText(link).then(() => {
-            // simple feedback
             const originalText = copyLinkBtn.innerText;
             copyLinkBtn.innerText = '✅ Copied!';
             setTimeout(() => {
@@ -551,7 +528,6 @@
         });
     }
 
-    // ---------- Event Listeners ----------
     swipeLeftBtn.addEventListener('click', () => {
         if (!gameCompleted && currentIndex < QUESTIONS.length) {
             recordAnswer('no');
@@ -564,8 +540,6 @@
         }
     });
     
-    // support touch swiping? optional: but left/right buttons are already great. For extra fun add simple swipe detection on card?
-    // add swipe detection on card-area for mobile users (slick)
     const cardArea = document.querySelector('.card-area');
     let touchStartX = 0;
     let touchEndX = 0;
@@ -579,20 +553,15 @@
             const diff = touchEndX - touchStartX;
             if (Math.abs(diff) > 40) {
                 if (diff > 0) {
-                    // swipe right -> YES
                     recordAnswer('yes');
                 } else {
-                    // swipe left -> NO
                     recordAnswer('no');
                 }
             }
         });
     }
     
-    // reset button logic
     resetGameBtn.addEventListener('click', () => {
-        // remove stored session? not required, but resetting game should clear current answers and start fresh
-        // Also if there's any view param in URL -> clear it
         const url = new URL(window.location.href);
         if (url.searchParams.has('view')) {
             url.searchParams.delete('view');
@@ -600,19 +569,10 @@
         }
         cleanPartnerMessage();
         resetGame();
-        // Additionally, remove any leftover results view message extra
     });
     
     copyLinkBtn.addEventListener('click', copyShareLink);
     
-    // Additional: if user is viewing partner results and then presses restart, we restart the game from scratch
-    // we already handle resetGameBtn. But we also need to ensure that after reset the 'answers' array is fresh.
-    // override reset behavior more robust: 
-    const originalReset = resetGame;
-    window.resetGameCustom = () => {
-        cleanPartnerMessage();
-        originalReset();
-    };
     resetGameBtn.onclick = () => {
         const url = new URL(window.location.href);
         if (url.searchParams.has('view')) {
@@ -623,23 +583,16 @@
         resetGame();
     };
     
-    // initialization: check if shared link is present, else start fresh game
     function init() {
         const hasShared = loadSharedResultsIfPresent();
         if (!hasShared) {
-            // start normal fresh game
             resetGame();
         } else {
-            // partner view: we already displayed results, but ensure no interaction with game buttons.
             gameViewDiv.style.display = 'none';
             resultsViewDiv.style.display = 'block';
-            // also make sure reset button works in this context: we added listener.
         }
     }
     
-    // Edge: after finishing game and getting share link, if user copies and opens in same browser, it will show results again. Good.
-    // Also ensure that when the game finishes, the results panel includes all answers.
-    // preload
     init();
 </script>
 </body>
