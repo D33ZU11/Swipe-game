@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>💕 Swipe Choice Game | For My Love</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* prevents accidental text selection while swiping */
+        }
+
+        body {
+            background: linear-gradient(145deg, #f9eef7 0%, #f7e3ea 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            padding: 16px;
+        }
+
+        /* main game container */
+        .game-container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 56px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px 16px 30px;
+            transition: all 0.2s ease;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.9rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #c44569, #e66767);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+
+        .sub {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #b34180;
+            opacity: 0.8;
+            margin-bottom: 24px;
+            border-bottom: 1px dashed #ffb7c5;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 6px;
+        }
+
+        /* card area */
+        .card-area {
+            background: #fffef7;
+            border-radius: 48px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        .question-card {
+            padding: 32px 24px 40px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #2d2f36;
+            margin: 12px 0 20px;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 220px;
+            background: #faf0f3;
+            border-radius: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 16px 0;
+            overflow: hidden;
+            box-shadow: inset 0 1px 4px #0001, 0 6px 12px -8px rgba(0,0,0,0.2);
+        }
+
+        .image-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 28px;
+        }
+
+        /* swipe hints & buttons */
+        .swipe-hint {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 16px 16px;
+            gap: 12px;
+        }
+
+        .swipe-btn {
+            flex: 1;
+            background: white;
+            border: none;
+            border-radius: 80px;
+            padding: 14px 6px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            font-family: monospace;
+        }
+
+        .swipe-left {
+            color: #e66767;
+            border: 1.5px solid #ffb8b8;
+            background: #fff5f5;
+        }
+
+        .swipe-right {
+            color: #28a47e;
+            border: 1.5px solid #b0e0c6;
+            background: #f0fff4;
+        }
+
+        .swipe-left:active { background: #ffe0e0; transform: scale(0.97);}
+        .swipe-right:active { background: #dcfce8; transform: scale(0.97);}
+
+        /* progress */
+        .progress {
+            text-align: center;
+            font-weight: 500;
+            background: #ffeef4;
+            width: fit-content;
+            margin: 12px auto 0;
+            padding: 6px 18px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            color: #b34e71;
+        }
+
+        /* result panel */
+        .result-panel {
+            background: white;
+            border-radius: 44px;
+            padding: 20px;
+            margin-top: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .result-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: #bc4e6c;
+        }
+
+        .answer-list {
+            background: #fef6f9;
+            border-radius: 32px;
+            padding: 12px 18px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .answer-item {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ffd9e4;
+            padding: 10px 0;
+            font-size: 1rem;
+        }
+
+        .badge-yes {
+            background: #c8f0e1;
+            color: #1e6f50;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        .badge-no {
+            background: #ffe0e0;
+            color: #bc4e6c;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        .share-link-area {
+            margin-top: 18px;
+            background: #f1f3f7;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 6px 6px 20px;
+        }
+
+        .share-link-area input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-size: 0.8rem;
+            font-family: monospace;
+            padding: 10px 0;
+            outline: none;
+            color: #2d2f36;
+        }
+
+        .copy-btn {
+            background: #c44569;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .copy-btn:active {
+            background: #a13352;
+            transform: scale(0.96);
+        }
+
+        .reset-btn {
+            background: none;
+            border: 1px solid #d4a5b7;
+            padding: 8px 20px;
+            border-radius: 60px;
+            margin-top: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #8b4b62;
+            width: 100%;
+        }
+
+        .finish-message {
+            text-align: center;
+            background: #d9f0e6;
+            border-radius: 48px;
+            padding: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #aa7a8c;
+        }
+
+        @media (max-width: 480px) {
+            .question-text { font-size: 1.5rem; }
+            .image-placeholder { height: 180px; }
+            .swipe-btn { padding: 10px 6px; font-size: 1rem;}
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="app">
+    <h1>✨ swipe & choose ✨</h1>
+    <div style="text-align: center"><span class="sub">for you, my love 💌</span></div>
+
+    <!-- dynamic view: either game or results -->
+    <div id="gameView">
+        <div class="card-area">
+            <div class="question-card">
+                <div class="image-placeholder" id="questionImage">
+                    <!-- image will be inserted here from external url -->
+                </div>
+                <div class="question-text" id="questionText">Loading...</div>
+            </div>
+        </div>
+
+        <div class="swipe-hint">
+            <button class="swipe-btn swipe-left" id="swipeLeftBtn">👈  NO  👈</button>
+            <button class="swipe-btn swipe-right" id="swipeRightBtn">👉  YES  👉</button>
+        </div>
+        <div class="progress" id="progressIndicator">question 0 / 0</div>
+    </div>
+
+    <div id="resultsView" style="display: none;">
+        <div class="result-panel">
+            <div class="result-title">💝 your choices 💝</div>
+            <div id="answersSummary" class="answer-list"></div>
+            <div class="share-link-area">
+                <input type="text" id="shareLinkInput" readonly placeholder="share link will appear here">
+                <button class="copy-btn" id="copyLinkBtn">📋 Copy</button>
+            </div>
+            <button class="reset-btn" id="resetGameBtn">⟳ answer again / restart</button>
+            <p style="font-size: 0.7rem; margin-top: 12px; text-align:center">✨ send this link to your partner so they can see what you picked ✨</p>
+        </div>
+    </div>
+    <footer>❤️ swipe left = NO | swipe right = YES</footer>
+</div>
+
+<script>
+    // ---------- QUESTION BANK ----------
+    // each question has: text, externalImageUrl (can be empty string if no pic)
+    const QUESTIONS = [
+        { text: "Do you want a drink? 🥤", imageUrl: "https://picsum.photos/id/221/400/280" },   // drinks themed random
+        { text: "Craving some pizza? 🍕", imageUrl: "https://picsum.photos/id/108/400/280" },
+        { text: "Should we watch a movie tonight? 🎬", imageUrl: "https://picsum.photos/id/20/400/280" },
+        { text: "Want me to give you a massage? 💆‍♀️", imageUrl: "https://picsum.photos/id/169/400/280" },
+        { text: "Do you want dessert? 🍰", imageUrl: "https://picsum.photos/id/106/400/280" },
+        { text: "Should we go for a walk? 🌳", imageUrl: "https://picsum.photos/id/96/400/280" },
+        { text: "Do you need a hug right now? 🤗", imageUrl: "https://picsum.photos/id/48/400/280" },
+        { text: "Order some bubble tea? 🧋", imageUrl: "https://picsum.photos/id/225/400/280" }
+    ];
+
+    // ---------- GLOBAL STATE ----------
+    let currentIndex = 0;                // which question we are on
+    let answers = [];                    // array of { choice: "yes"/"no", questionText, imageUrl }
+    let gameCompleted = false;
+
+    // DOM elements
+    const gameViewDiv = document.getElementById('gameView');
+    const resultsViewDiv = document.getElementById('resultsView');
+    const questionTextEl = document.getElementById('questionText');
+    const questionImageEl = document.getElementById('questionImage');
+    const progressIndicator = document.getElementById('progressIndicator');
+    const swipeLeftBtn = document.getElementById('swipeLeftBtn');
+    const swipeRightBtn = document.getElementById('swipeRightBtn');
+    const answersSummaryDiv = document.getElementById('answersSummary');
+    const shareLinkInput = document.getElementById('shareLinkInput');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const resetGameBtn = document.getElementById('resetGameBtn');
+
+    // helper: render current question card (image + text)
+    function renderCurrentQuestion() {
+        if (currentIndex >= QUESTIONS.length) {
+            finishGameAndShowResults();
+            return;
+        }
+        const q = QUESTIONS[currentIndex];
+        questionTextEl.innerText = q.text;
+        // handle external image: if imageUrl exists, create img, else show placeholder emoji
+        questionImageEl.innerHTML = '';
+        if (q.imageUrl && q.imageUrl.trim() !== '') {
+            const img = document.createElement('img');
+            img.src = q.imageUrl;
+            img.alt = "visual";
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "32px";
+            // handle broken images gracefully
+            img.onerror = () => {
+                img.src = "https://placehold.co/400x280/ffe8f0/c44569?text=❤️+image+missing";
+            };
+            questionImageEl.appendChild(img);
+        } else {
+            // fallback cute emoji placeholder
+            const fallbackDiv = document.createElement('div');
+            fallbackDiv.innerText = "💗";
+            fallbackDiv.style.fontSize = "4rem";
+            fallbackDiv.style.display = "flex";
+            fallbackDiv.style.alignItems = "center";
+            fallbackDiv.style.justifyContent = "center";
+            fallbackDiv.style.height = "100%";
+            questionImageEl.appendChild(fallbackDiv);
+        }
+        progressIndicator.innerText = `question ${currentIndex+1} / ${QUESTIONS.length}`;
+    }
+
+    // record answer and move to next
+    function recordAnswer(choice) {
+        if (gameCompleted) return;
+        if (currentIndex >= QUESTIONS.length) return;
+
+        const currentQ = QUESTIONS[currentIndex];
+        answers.push({
+            questionText: currentQ.text,
+            choice: choice,   // "yes" or "no"
+            imageUrl: currentQ.imageUrl || ""
+        });
+
+        // move to next question
+        currentIndex++;
+        if (currentIndex < QUESTIONS.length) {
+            renderCurrentQuestion();
+        } else {
+            // game finished
+            finishGameAndShowResults();
+        }
+    }
+
+    // finish: compile results, save to localStorage and generate share link
+    function finishGameAndShowResults() {
+        gameCompleted = true;
+        // store answers to localStorage (so that partner can later view via share link)
+        const payload = {
+            timestamp: Date.now(),
+            answers: answers,
+            totalQuestions: QUESTIONS.length
+        };
+        const dataStr = JSON.stringify(payload);
+        // generate unique ID for this session (short random + timestamp)
+        const sessionId = btoa(encodeURIComponent(dataStr)).slice(0, 64);  // URL safe-ish but we'll use short version
+        // we use localStorage to keep the result under that key (simulate a "database" via localStorage)
+        // the share link will contain a hash or query param: ?view=<sessionId>
+        const storageKey = `swipegame_${sessionId}`;
+        localStorage.setItem(storageKey, dataStr);
+        
+        // Build absolute shareable URL (using current origin + path)
+        const currentUrl = new URL(window.location.href);
+        // clean existing params
+        currentUrl.searchParams.set('view', sessionId);
+        const shareableLink = currentUrl.toString();
+        
+        // display results view
+        gameViewDiv.style.display = 'none';
+        resultsViewDiv.style.display = 'block';
+        
+        // render answers summary (for current user / partner when opened with same data)
+        renderAnswersSummary(answers);
+        shareLinkInput.value = shareableLink;
+    }
+
+    // Render pretty list of answers (yes/no) with optional icons
+    function renderAnswersSummary(answerArray) {
+        if (!answerArray || answerArray.length === 0) {
+            answersSummaryDiv.innerHTML = '<div style="text-align:center">✨ no answers yet ✨</div>';
+            return;
+        }
+        let html = '';
+        for (let i = 0; i < answerArray.length; i++) {
+            const ans = answerArray[i];
+            const choiceText = ans.choice === 'yes' ? '✅ YES' : '❌ NO';
+            const badgeClass = ans.choice === 'yes' ? 'badge-yes' : 'badge-no';
+            html += `
+                <div class="answer-item">
+                    <span style="flex:1; font-weight:500;">${ans.questionText}</span>
+                    <span class="${badgeClass}">${choiceText}</span>
+                </div>
+            `;
+        }
+        answersSummaryDiv.innerHTML = html;
+    }
+
+    // reset everything to initial state (clear current answers, start over)
+    function resetGame() {
+        // reset state variables
+        currentIndex = 0;
+        answers = [];
+        gameCompleted = false;
+        // switch UI back to game view
+        gameViewDiv.style.display = 'block';
+        resultsViewDiv.style.display = 'none';
+        // re-render first question
+        renderCurrentQuestion();
+    }
+
+    // ---- LOAD SHARED RESULTS FROM URL (partner view) ----
+    // if URL contains ?view=sessionId, try to load the answers from localStorage and display them directly
+    function loadSharedResultsIfPresent() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('view');
+        if (!sessionId) return false; // no shared data
+        
+        const storageKey = `swipegame_${sessionId}`;
+        const storedData = localStorage.getItem(storageKey);
+        if (!storedData) {
+            // maybe it's expired or not found, but we can still show a message and allow game start
+            return false;
+        }
+        
+        try {
+            const parsed = JSON.parse(storedData);
+            if (parsed.answers && Array.isArray(parsed.answers)) {
+                // partner view: show results directly without ability to replay? 
+                // but we allow to reset anyway. For partner: we show readonly results with a note
+                gameViewDiv.style.display = 'none';
+                resultsViewDiv.style.display = 'block';
+                renderAnswersSummary(parsed.answers);
+                // For share link, we want to also show a link to the same results (recreate share link)
+                const currentCleanUrl = new URL(window.location.href);
+                currentCleanUrl.searchParams.set('view', sessionId);
+                shareLinkInput.value = currentCleanUrl.toString();
+                // show a friendly message that these are partner's choices
+                const extraMsg = document.createElement('div');
+                extraMsg.className = 'finish-message';
+                extraMsg.innerHTML = '💖 These are the choices your love made! 💖<br><small>send this link to see again, or restart below</small>';
+                const resultPanel = document.querySelector('#resultsView .result-panel');
+                if (!document.getElementById('dynamicPartnerMsg')) {
+                    extraMsg.id = 'dynamicPartnerMsg';
+                    resultPanel.insertBefore(extraMsg, resultPanel.firstChild);
+                }
+                return true;
+            }
+        } catch(e) {
+            console.warn("failed to parse shared data");
+        }
+        return false;
+    }
+
+    // ---- Also, when we generate new game we must ensure we don't overwrite partner accidentally
+    // reset game also clears URL param? to avoid confusion: after reset we remove view param and reload clean state
+    function resetAndClearSharedView() {
+        // remove view param from URL without reloading the page? better to replace state.
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('view')) {
+            url.searchParams.delete('view');
+            window.history.replaceState({}, '', url.toString());
+        }
+        resetGame();
+    }
+
+    // after reset we also need to clear any leftover "partner message"
+    function cleanPartnerMessage() {
+        const existingMsg = document.getElementById('dynamicPartnerMsg');
+        if (existingMsg) existingMsg.remove();
+    }
+
+    // handle copy to clipboard
+    function copyShareLink() {
+        const link = shareLinkInput.value;
+        if (!link) return;
+        navigator.clipboard.writeText(link).then(() => {
+            // simple feedback
+            const originalText = copyLinkBtn.innerText;
+            copyLinkBtn.innerText = '✅ Copied!';
+            setTimeout(() => {
+                copyLinkBtn.innerText = originalText;
+            }, 1500);
+        }).catch(() => {
+            alert('Press Ctrl+C to copy the link');
+        });
+    }
+
+    // ---------- Event Listeners ----------
+    swipeLeftBtn.addEventListener('click', () => {
+        if (!gameCompleted && currentIndex < QUESTIONS.length) {
+            recordAnswer('no');
+        }
+    });
+    
+    swipeRightBtn.addEventListener('click', () => {
+        if (!gameCompleted && currentIndex < QUESTIONS.length) {
+            recordAnswer('yes');
+        }
+    });
+    
+    // support touch swiping? optional: but left/right buttons are already great. For extra fun add simple swipe detection on card?
+    // add swipe detection on card-area for mobile users (slick)
+    const cardArea = document.querySelector('.card-area');
+    let touchStartX = 0;
+    let touchEndX = 0;
+    if (cardArea) {
+        cardArea.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        cardArea.addEventListener('touchend', (e) => {
+            if (gameCompleted || currentIndex >= QUESTIONS.length) return;
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchEndX - touchStartX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) {
+                    // swipe right -> YES
+                    recordAnswer('yes');
+                } else {
+                    // swipe left -> NO
+                    recordAnswer('no');
+                }
+            }
+        });
+    }
+    
+    // reset button logic
+    resetGameBtn.addEventListener('click', () => {
+        // remove stored session? not required, but resetting game should clear current answers and start fresh
+        // Also if there's any view param in URL -> clear it
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('view')) {
+            url.searchParams.delete('view');
+            window.history.replaceState({}, '', url.toString());
+        }
+        cleanPartnerMessage();
+        resetGame();
+        // Additionally, remove any leftover results view message extra
+    });
+    
+    copyLinkBtn.addEventListener('click', copyShareLink);
+    
+    // Additional: if user is viewing partner results and then presses restart, we restart the game from scratch
+    // we already handle resetGameBtn. But we also need to ensure that after reset the 'answers' array is fresh.
+    // override reset behavior more robust: 
+    const originalReset = resetGame;
+    window.resetGameCustom = () => {
+        cleanPartnerMessage();
+        originalReset();
+    };
+    resetGameBtn.onclick = () => {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('view')) {
+            url.searchParams.delete('view');
+            window.history.replaceState({}, '', url.toString());
+        }
+        cleanPartnerMessage();
+        resetGame();
+    };
+    
+    // initialization: check if shared link is present, else start fresh game
+    function init() {
+        const hasShared = loadSharedResultsIfPresent();
+        if (!hasShared) {
+            // start normal fresh game
+            resetGame();
+        } else {
+            // partner view: we already displayed results, but ensure no interaction with game buttons.
+            gameViewDiv.style.display = 'none';
+            resultsViewDiv.style.display = 'block';
+            // also make sure reset button works in this context: we added listener.
+        }
+    }
+    
+    // Edge: after finishing game and getting share link, if user copies and opens in same browser, it will show results again. Good.
+    // Also ensure that when the game finishes, the results panel includes all answers.
+    // preload
+    init();
+</script>
+</body>
+</html>
